@@ -86,8 +86,18 @@ class AcquirerWeChatPay(models.Model):
                     result = {
                         "acquirer_reference": res['transaction_id']
                     }
+                    try:
+                        # dateutil and pytz don't recognize abbreviations PDT/PST
+                        tzinfos = {
+                            'PST': -8 * 3600,
+                            'PDT': -7 * 3600,
+                        }
+                        date_validate = dateutil.parser.parse(
+                            res.get('payment_date'), tzinfos=tzinfos).astimezone(pytz.utc)
+                    except:
+                        date_validate = fields.Datetime.now()
+                    result.update(state='done', date_validate=date_validate)
                     transaction.write(result)
-                    transaction._set_transaction_done()
                     return True
                 elif transaction.state == 'done':
                     return True

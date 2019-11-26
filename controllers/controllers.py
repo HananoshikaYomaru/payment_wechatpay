@@ -61,7 +61,7 @@ class WeChatPay(http.Controller):
             res = self.validate_pay_data(**kwargs)
         except ValidationError:
             _logger.exception("支付验证失败")
-        return redirect_with_hash("/payment/process")
+        return redirect_with_hash("/shop/confirmation")
 
     @http.route('/payment/wechatpay/notify', csrf=False, type="http", auth='none', method=["POST"])
     def wechatpay_notify(self, **kwargs):

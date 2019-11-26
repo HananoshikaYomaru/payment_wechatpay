@@ -27,19 +27,27 @@ class WeChatPay(http.Controller):
         # 获取微信支付
         acquirer = request.env['payment.acquirer'].sudo().search(
             [('provider', '=', 'wechatpay')], limit=1)
-        qrcode = acquirer._get_qrcode_url(order)
+        res, data = acquirer._get_qrcode_url(order)
         values = {}
-        values['qrcode'] = self.make_qrcode(qrcode)
-        values['order'] = order.name
-        values['amount'] = order.amount_total
-
+        if res:
+            values['qrcode'] = self.make_qrcode(data)
+            values['order'] = order.name
+            values['amount'] = order.amount_total
+        else:
+            values['error'] = data
         return request.render("payment_wechatpay.wechatpay_pay", values)
 
     @http.route('/shop/wechatpay/result', type='http', auth="public", website=True)
     def wechatpay_query(self):
         """轮询支付结果"""
-        # [FIXME] 根据微信支付返回结果
-        return json.dumps({"result": 0})
+        order = request.website.sale_get_order()
+        # 获取微信支付
+        acquirer = request.env['payment.acquirer'].sudo().search(
+            [('provider', '=', 'wechatpay')], limit=1)
+        if acquirer.wechatpy_query_pay(order):
+            # 支付成功
+            return json.dumps({"result": 0, "order": order.name})
+        return json.dumps({"result": 1, "order": order.name})
 
     def validate_pay_data(self, **kwargs):
         res = request.env['payment.transaction'].sudo(
@@ -51,9 +59,6 @@ class WeChatPay(http.Controller):
         """页面跳转后验证支付结果"""
         _logger.info("开始验证微信支付结果...")
         try:
-            # [FIXME] 验证微信支付结果
-            kwargs['out_trade_no'] = 'SO823-37'
-            kwargs['trade_no'] = 'xxxxxxx'
             res = self.validate_pay_data(**kwargs)
         except ValidationError:
             _logger.exception("支付验证失败")
@@ -62,8 +67,7 @@ class WeChatPay(http.Controller):
     @http.route('/payment/wechatpay/notify', csrf=False, type="http", auth='none', method=["POST"])
     def alipay_notify(self, **kwargs):
         """接收微信支付异步通知"""
-        _logger.debug(f"接收微信支付异步通知...收到的数据:{kwargs}")
+        _logger.debug("接收微信支付异步通知...收到的数据:{}".format(kwargs))
         payment = request.env["payment.acquirer"].sudo().search(
             [('provider', '=', 'wechatpay')], limit=1)
-        result = payment._verify_wechatpay(kwargs)
-        return "success" if result else "failed"
+        return payment._verify_wechatpay(kwargs)

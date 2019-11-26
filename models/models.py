@@ -4,6 +4,8 @@ from odoo import models, fields, api
 from wechatpy.pay import WeChatPay
 from odoo.exceptions import ValidationError
 import logging
+from datetime import datetime, timedelta
+from dateutil import tz
 
 _logger = logging.getLogger(__name__)
 
@@ -15,8 +17,8 @@ class AcquirerWeChatPay(models.Model):
     wechatpay_appid = fields.Char("WeChatPay AppId", size=32)
     wechatpay_app_key = fields.Char("Api Key")
     wechatpay_mch_id = fields.Char("Merchant Id", size=32)
-    wechatpay_mch_key = fields.Binary("Merchat Key")
-    wechatpay_mch_cert = fields.Binary("Merchant Cert")
+    wechatpay_mch_key = fields.Char("Merchat Key File Path")
+    wechatpay_mch_cert = fields.Char("Merchant Cert File Path")
 
     def _get_feature_support(self):
         res = super(AcquirerWeChatPay, self)._get_feature_support()
@@ -38,17 +40,50 @@ class AcquirerWeChatPay(models.Model):
 
     def _get_qrcode_url(self, order):
         """获取微信支付二维码"""
-        wechatpay = self._get_wechatpay()
-        wechatpay.order.create(trade_type="NATIVE", body=order.name,
-                               out_trade_no=order.name, total_fee="1", notify_url="")
-        # [FIXME] 伪代码
-        qrstring = "weixin://wxpay/s/An4baqw"
-        return qrstring
+        try:
+            base_url = self.env['ir.config_parameter'].sudo(
+            ).get_param('web.base.url')
+            wechatpay = self._get_wechatpay()
+            # 服务器时间为UTC时间，因此需要转换成东八区时间
+            tz_sh = tz.gettz("Asia/Shanghai")
+            date_start = datetime.now().astimezone(tz_sh)
+            date_end = (datetime.now()+timedelta(hours=2)).astimezone(tz_sh)
+            res = wechatpay.order.create(trade_type="NATIVE", body=order.name, time_start=date_start, time_expire=date_end,
+                                         out_trade_no=order.name, total_fee="1", notify_url="{}{}".format(base_url, '/payment/wechatpay/notify'))
+            '''
+            OrderedDict([('return_code', 'SUCCESS'), ('return_msg', 'OK'), ('appid', 'wx202b942c0a06c761'), ('mch_id', '1564220001'), ('nonce_str', 'loXRTjWbjVGAUyH7'), ('sign', '3C4908B44BC0BDDEA4D2D887FAFC6849'), ('result_code', 'SUCCESS'), ('prepay_id', 'wx261124436702937d32c5a9a71201397000'), ('trade_type', 'NATIVE'), ('code_url', 'weixin://wxpay/bizpayurl?pr=BkPWvtG')])
+            '''
+            if res['return_code'] == "SUCCESS":
+                # 预生成订单成功
+                return True, res['code_url']
+            _logger.error("微信支付预生成订单失败：{}".format(res))
+            raise ValidationError("预生成微信支付订单失败")
+        except Exception as err:
+            return False, err
 
     @api.multi
     def wechatpay_get_form_action_url(self):
         """统一下单"""
         return "/shop/wechatpay"
+
+    @api.model
+    def wechatpy_query_pay(self, order):
+        """
+        主动去微信支付查询支付结果
+        用户支付前没有transcation_id因此，只能用商户自有订单号去查
+        只有SUCCESS支付成功，其他状态均不成功
+        """
+        '''
+        OrderedDict([('return_code', 'SUCCESS'), ('return_msg', 'OK'), ('appid', 'wx202b942c0a06c761'), ('mch_id', '1564220001'), ('device_info', None), ('nonce_str', 'hzQybAlDQdlW8ys1'), ('sign', 'C6FF4C180115C8DD93DB7E12EE4B1B12'), ('result_code', 'SUCCESS'), ('total_fee', '1'), ('out_trade_no', 'SO007'), ('trade_state', 'NOTPAY'), ('trade_state_desc', '订单未支付')]) 
+        '''
+        wechatpay = self._get_wechatpay()
+        res = wechatpay.order.query(out_trade_no=order.name)
+        _logger.info("主动查询微信支付结果:{}".format(res))
+        if res["return_code"] == "SUCCESS" and res["result_code"] == "SUCCESS":
+            if res["trade_state"] == "SUCCESS":
+                # 支付成功
+                return True
+        return False
 
     @api.multi
     def wechatpay_from_generate_values(self, values):
@@ -57,13 +92,16 @@ class AcquirerWeChatPay(models.Model):
 
     def _verify_wechatpay(self, data):
         """验证微信支付服务器返回的信息"""
+        wechatpay = self._get_wechatpay()
+        result = wechatpay.parse_payment_result(data)
+        _logger.info("解析微信支付返回结果：{}".format(result))
         # [FIXME]
         # 校验支付信息
-        transaction = self.env["payment.transaction"].sudo().search(
-            [('reference', '=', data["out_trade_no"])], limit=1)
+        # transaction = self.env["payment.transaction"].sudo().search(
+        #     [('reference', '=', data["out_trade_no"])], limit=1)
         # 将支付结果设置完成
-        transaction._set_transaction_done()
-        return True
+        # transaction._set_transaction_done()
+        return False
 
 
 class TxWeChatpay(models.Model):
@@ -74,9 +112,9 @@ class TxWeChatpay(models.Model):
     @api.model
     def _wechatpay_form_get_tx_from_data(self, data):
         """获取支付事务"""
-        if not data.get("out_trade_no", None):
+        if not data.get("order", None):
             raise ValidationError("订单号错误")
-        reference = data.get("out_trade_no")
+        reference = data.get("order")
         txs = self.env["payment.transaction"].search(
             [('reference', '=', reference)])
         if not txs or len(txs) > 1:
@@ -93,13 +131,15 @@ class TxWeChatpay(models.Model):
     @api.multi
     def _wechatpay_form_validate(self, data):
         """验证微信支付"""
+        print('----验证微信支付---')
+        print(data)
         if self.state == 'done':
             _logger.info(f"支付已经验证：{data['out_trade_no']}")
             return True
         result = {
             "acquirer_reference": data["trade_no"]
         }
-        # 根据支付宝同步返回的信息，去支付宝服务器查询
+        # 根据微信支付服务器返回的信息，去微信支付服务器查询
         payment = self.env["payment.acquirer"].sudo().search(
             [('provider', '=', 'wechatpay')], limit=1)
         wechatpay = payment._get_wechatpay()

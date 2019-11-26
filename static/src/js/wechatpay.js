@@ -8,7 +8,7 @@ function wechatpay_query() {
             success: function (res) {
                 if (res.result == 0) {
                     //跳转后续页面
-                    window.location.href = '/payment/wechatpay/validate'
+                    window.location.href = '/payment/wechatpay/validate?order=' + res.order
                 }
             }
         });

@@ -80,6 +80,14 @@ class AcquirerWeChatPay(models.Model):
         if res["return_code"] == "SUCCESS" and res["result_code"] == "SUCCESS":
             if res["trade_state"] == "SUCCESS":
                 # 支付成功
+                transaction = self.env["payment.transaction"].sudo().search(
+                    [('reference', '=', order.name)], limit=1)
+                # 将支付结果设置完成
+                result = {
+                    "acquirer_reference": result['transaction_id']
+                }
+                transaction.write(result)
+                transaction._set_transaction_done()
                 return True
         return False
 

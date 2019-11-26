@@ -41,7 +41,7 @@ class AcquirerWeChatPay(models.Model):
         except Exception as err:
             _logger.exception(f"生成微信支付客户端失败:{err}")
 
-    def _get_qrcode_url(self, order):
+    def _get_qrcode_url(self, kw):
         """获取微信支付二维码"""
         try:
             base_url = self.env['ir.config_parameter'].sudo(
@@ -52,8 +52,8 @@ class AcquirerWeChatPay(models.Model):
             date_start = datetime.now().astimezone(tz_sh)
             date_end = (datetime.now()+timedelta(hours=2)).astimezone(tz_sh)
             # [FIXME] 1分钱测试
-            res = wechatpay.order.create(trade_type="NATIVE", body=order.name, time_start=date_start, time_expire=date_end,
-                                         out_trade_no=order.name, total_fee="1", notify_url="{}{}".format(base_url, '/payment/wechatpay/notify'))
+            res = wechatpay.order.create(trade_type="NATIVE", body=kw['reference'], time_start=date_start, time_expire=date_end,
+                                         out_trade_no=kw['reference'], total_fee="1", notify_url="{}{}".format(base_url, '/payment/wechatpay/notify'))
             if res['return_code'] == "SUCCESS":
                 # 预生成订单成功
                 return True, res['code_url']

@@ -23,16 +23,15 @@ class WeChatPay(http.Controller):
 
     @http.route('/shop/wechatpay', type='http', auth="public", website=True)
     def index(self, **kw):
-        order = request.website.sale_get_order()
         # 获取微信支付
         acquirer = request.env['payment.acquirer'].sudo().search(
             [('provider', '=', 'wechatpay')], limit=1)
-        res, data = acquirer._get_qrcode_url(order)
+        res, data = acquirer._get_qrcode_url(kw)
         values = {}
         if res:
             values['qrcode'] = self.make_qrcode(data)
-            values['order'] = order.name
-            values['amount'] = order.amount_total
+            values['order'] = kw['reference']
+            values['amount'] = kw['amount']
         else:
             values['error'] = data
         return request.render("payment_wechatpay.wechatpay_pay", values)

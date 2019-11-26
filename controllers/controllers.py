@@ -37,16 +37,16 @@ class WeChatPay(http.Controller):
         return request.render("payment_wechatpay.wechatpay_pay", values)
 
     @http.route('/shop/wechatpay/result', type='http', auth="public", website=True)
-    def wechatpay_query(self):
+    def wechatpay_query(self, order):
         """轮询支付结果"""
-        order = request.website.sale_get_order()
+        # order = request.website.sale_get_order()
         # 获取微信支付
         acquirer = request.env['payment.acquirer'].sudo().search(
             [('provider', '=', 'wechatpay')], limit=1)
         if acquirer.wechatpy_query_pay(order):
             # 支付成功
-            return json.dumps({"result": 0, "order": order.name})
-        return json.dumps({"result": 1, "order": order.name})
+            return json.dumps({"result": 0, "order": order})
+        return json.dumps({"result": 1, "order": order})
 
     def validate_pay_data(self, **kwargs):
         res = request.env['payment.transaction'].sudo(

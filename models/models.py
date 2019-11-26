@@ -75,13 +75,13 @@ class AcquirerWeChatPay(models.Model):
         只有SUCCESS支付成功，其他状态均不成功
         """
         wechatpay = self._get_wechatpay()
-        res = wechatpay.order.query(out_trade_no=order.name)
+        res = wechatpay.order.query(out_trade_no=order)
         _logger.info("主动查询微信支付结果:{}".format(res))
         if res["return_code"] == "SUCCESS" and res["result_code"] == "SUCCESS":
             if res["trade_state"] == "SUCCESS":
                 # 支付成功
                 transaction = self.env["payment.transaction"].sudo().search(
-                    [('reference', '=', order.name)], limit=1)
+                    [('reference', '=', order)], limit=1)
                 # 将支付结果设置完成
                 result = {
                     "acquirer_reference": res['transaction_id']

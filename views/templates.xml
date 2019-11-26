@@ -28,7 +28,7 @@
                             <div class="card">
                                 <div class="card-body" id="shipping_and_billing">
                                     <div t-if="not error">
-                                      <b>Order:  <t t-esc="order"/> </b>
+                                      <b>Order:  <span class="order" t-esc="order"/> </b>
                                       <b>Amount: <span t-esc="amount"/></b>
                                     </div>
                                 </div>

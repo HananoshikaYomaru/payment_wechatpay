@@ -39,7 +39,7 @@ class AcquirerWeChatPay(models.Model):
                                   mch_key=self.wechatpay_mch_key)
             return wechatpay
         except Exception as err:
-            _logger.exception(f"生成微信支付客户端失败:{err}")
+            _logger.exception("生成微信支付客户端失败:{}".format(err))
 
     def _get_qrcode_url(self, kw):
         """获取微信支付二维码"""
@@ -49,11 +49,12 @@ class AcquirerWeChatPay(models.Model):
             wechatpay = self._get_wechatpay()
             # 服务器时间为UTC时间，因此需要转换成东八区时间
             tz_sh = tz.gettz("Asia/Shanghai")
-            date_start = datetime.now().astimezone(tz_sh)
-            date_end = (datetime.now()+timedelta(hours=2)).astimezone(tz_sh)
-            # [FIXME] 1分钱测试
+            date_start = datetime.now().replace(tzinfo=tz.UTC).astimezone(tz_sh)
+            date_end = (datetime.now()+timedelta(hours=2)
+                        ).replace(tzinfo=tz.UTC).astimezone(tz_sh)
+            amount = int(float(kw['amount']) * 100)
             res = wechatpay.order.create(trade_type="NATIVE", body=kw['reference'], time_start=date_start, time_expire=date_end,
-                                         out_trade_no=kw['reference'], total_fee="1", notify_url="{}{}".format(base_url, '/payment/wechatpay/notify'))
+                                         out_trade_no=kw['reference'], total_fee=amount, notify_url="{}{}".format(base_url, '/payment/wechatpay/notify'))
             if res['return_code'] == "SUCCESS":
                 # 预生成订单成功
                 return True, res['code_url']
@@ -166,7 +167,7 @@ class TxWeChatpay(models.Model):
     def _wechatpay_form_validate(self, data):
         """验证微信支付"""
         if self.state == 'done':
-            _logger.info(f"支付已经验证：{data['order']}")
+            _logger.info("支付已经验证：{}".format(data['order']))
             return True
         # 根据微信支付服务器返回的信息，去微信支付服务器查询
         payment = self.env["payment.acquirer"].sudo().search(

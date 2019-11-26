@@ -151,8 +151,6 @@ class TxWeChatpay(models.Model):
     @api.multi
     def _wechatpay_form_validate(self, data):
         """验证微信支付"""
-        _logger.info('----验证微信支付---')
-        _logger.info(data)
         if self.state == 'done':
             _logger.info(f"支付已经验证：{data['order']}")
             return True

@@ -79,16 +79,21 @@ class AcquirerWeChatPay(models.Model):
         _logger.info("主动查询微信支付结果:{}".format(res))
         if res["return_code"] == "SUCCESS" and res["result_code"] == "SUCCESS":
             if res["trade_state"] == "SUCCESS":
-                # 支付成功
-                transaction = self.env["payment.transaction"].sudo().search(
-                    [('reference', '=', order)], limit=1)
-                # 将支付结果设置完成
-                result = {
-                    "acquirer_reference": res['transaction_id']
-                }
-                transaction.write(result)
-                transaction._set_transaction_done()
-                return True
+                if transaction.state in ('draft', 'pending', 'authorized'):
+                    # 支付成功
+                    transaction = self.env["payment.transaction"].sudo().search(
+                        [('reference', '=', order)], limit=1)
+                    # 将支付结果设置完成
+                    result = {
+                        "acquirer_reference": res['transaction_id']
+                    }
+                    transaction.write(result)
+                    transaction._set_transaction_done()
+                    return True
+                elif transaction.state == 'done':
+                    return True
+                else:
+                    return False
         return False
 
     @api.multi

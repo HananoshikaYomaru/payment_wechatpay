@@ -23,3 +23,7 @@ odoo == 12.0
 ```python
 git clone https://github.com/block-cat/payment_wechatpay
 ```
+
+# Demo
+
+![](static/src/image/demo.gif)

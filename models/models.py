@@ -106,13 +106,18 @@ class AcquirerWeChatPay(models.Model):
                 # 支付校验成功
                 transaction = self.env["payment.transaction"].sudo().search(
                     [('reference', '=', result["out_trade_no"])], limit=1)
-                # 将支付结果设置完成
-                result = {
-                    "acquirer_reference": result['transaction_id']
-                }
-                transaction.write(result)
-                transaction._set_transaction_done()
-                return True
+                if transaction.state in ('draft', 'pending', 'authorized'):
+                    # 将支付结果设置完成
+                    result = {
+                        "acquirer_reference": result['transaction_id']
+                    }
+                    transaction.write(result)
+                    transaction._set_transaction_done()
+                    return True
+                elif transaction.state == 'done':
+                    return True
+                else:
+                    return False
             return False
         except Exception as err:
             _logger.error("解析微信支付推送消息失败:{}".format(traceback.format_exc()))
@@ -146,8 +151,8 @@ class TxWeChatpay(models.Model):
     @api.multi
     def _wechatpay_form_validate(self, data):
         """验证微信支付"""
-        print('----验证微信支付---')
-        print(data)
+        _logger.info('----验证微信支付---')
+        _logger.info(data)
         if self.state == 'done':
             _logger.info(f"支付已经验证：{data['out_trade_no']}")
             return True

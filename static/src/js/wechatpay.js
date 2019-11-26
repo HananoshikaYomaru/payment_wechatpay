@@ -18,4 +18,4 @@ function wechatpay_query() {
         });
     });
 }
-setInterval('wechatpay_query()', 10000);
+setInterval('wechatpay_query()', 5000);

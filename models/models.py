@@ -1,4 +1,6 @@
-# -*- coding: utf-8 -*-
+#!/usr/bin/python3
+# @Time    : 2019-11-26
+# @Author  : Kevin Kong (kfx2007@163.com)
 
 from odoo import models, fields, api
 from wechatpy.pay import WeChatPay
@@ -6,6 +8,7 @@ from odoo.exceptions import ValidationError
 import logging
 from datetime import datetime, timedelta
 from dateutil import tz
+import traceback
 
 _logger = logging.getLogger(__name__)
 
@@ -91,16 +94,20 @@ class AcquirerWeChatPay(models.Model):
             wechatpay = self._get_wechatpay()
             result = wechatpay.parse_payment_result(data)
             _logger.info("解析微信支付返回结果：{}".format(result))
-            if result['result_code'] == 'SUCCESS' and result['return_code']=='SUCCESS':
+            if result['result_code'] == 'SUCCESS' and result['return_code'] == 'SUCCESS':
                 # 支付校验成功
                 transaction = self.env["payment.transaction"].sudo().search(
-                    [('reference', '=', data["out_trade_no"])], limit=1)
+                    [('reference', '=', result["out_trade_no"])], limit=1)
                 # 将支付结果设置完成
+                result = {
+                    "acquirer_reference": result['transaction_id']
+                }
+                transaction.write(result)
                 transaction._set_transaction_done()
                 return True
             return False
         except Exception as err:
-            _logger.error("解析微信支付推送消息失败:{}".format(err))
+            _logger.error("解析微信支付推送消息失败:{}".format(traceback.format_exc()))
             return False
 
 

@@ -65,7 +65,7 @@ class WeChatPay(http.Controller):
         return redirect_with_hash("/payment/process")
 
     @http.route('/payment/wechatpay/notify', csrf=False, type="http", auth='none', method=["POST"])
-    def alipay_notify(self, **kwargs):
+    def wechatpay_notify(self, **kwargs):
         """接收微信支付异步通知"""
         _logger.debug("接收微信支付异步通知...收到的数据:{}".format(request.httprequest.data))
         payment = request.env["payment.acquirer"].sudo().search(

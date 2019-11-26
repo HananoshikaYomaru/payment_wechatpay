@@ -70,4 +70,7 @@ class WeChatPay(http.Controller):
         _logger.debug("接收微信支付异步通知...收到的数据:{}".format(request.httprequest.data))
         payment = request.env["payment.acquirer"].sudo().search(
             [('provider', '=', 'wechatpay')], limit=1)
-        return payment._verify_wechatpay(request.httprequest.data)
+
+        if payment._verify_wechatpay(request.httprequest.data):
+            _logger.debug("回复微信")
+            return b"""<xml><return_code><![CDATA[SUCCESS]]></return_code><return_msg><![CDATA[OK]]></return_msg></xml>"""

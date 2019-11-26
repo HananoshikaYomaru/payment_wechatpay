@@ -48,11 +48,9 @@ class AcquirerWeChatPay(models.Model):
             tz_sh = tz.gettz("Asia/Shanghai")
             date_start = datetime.now().astimezone(tz_sh)
             date_end = (datetime.now()+timedelta(hours=2)).astimezone(tz_sh)
+            # [FIXME] 1分钱测试
             res = wechatpay.order.create(trade_type="NATIVE", body=order.name, time_start=date_start, time_expire=date_end,
                                          out_trade_no=order.name, total_fee="1", notify_url="{}{}".format(base_url, '/payment/wechatpay/notify'))
-            '''
-            OrderedDict([('return_code', 'SUCCESS'), ('return_msg', 'OK'), ('appid', 'wx202b942c0a06c761'), ('mch_id', '1564220001'), ('nonce_str', 'loXRTjWbjVGAUyH7'), ('sign', '3C4908B44BC0BDDEA4D2D887FAFC6849'), ('result_code', 'SUCCESS'), ('prepay_id', 'wx261124436702937d32c5a9a71201397000'), ('trade_type', 'NATIVE'), ('code_url', 'weixin://wxpay/bizpayurl?pr=BkPWvtG')])
-            '''
             if res['return_code'] == "SUCCESS":
                 # 预生成订单成功
                 return True, res['code_url']
@@ -73,9 +71,6 @@ class AcquirerWeChatPay(models.Model):
         用户支付前没有transcation_id因此，只能用商户自有订单号去查
         只有SUCCESS支付成功，其他状态均不成功
         """
-        '''
-        OrderedDict([('return_code', 'SUCCESS'), ('return_msg', 'OK'), ('appid', 'wx202b942c0a06c761'), ('mch_id', '1564220001'), ('device_info', None), ('nonce_str', 'hzQybAlDQdlW8ys1'), ('sign', 'C6FF4C180115C8DD93DB7E12EE4B1B12'), ('result_code', 'SUCCESS'), ('total_fee', '1'), ('out_trade_no', 'SO007'), ('trade_state', 'NOTPAY'), ('trade_state_desc', '订单未支付')]) 
-        '''
         wechatpay = self._get_wechatpay()
         res = wechatpay.order.query(out_trade_no=order.name)
         _logger.info("主动查询微信支付结果:{}".format(res))
@@ -92,16 +87,21 @@ class AcquirerWeChatPay(models.Model):
 
     def _verify_wechatpay(self, data):
         """验证微信支付服务器返回的信息"""
-        wechatpay = self._get_wechatpay()
-        result = wechatpay.parse_payment_result(data)
-        _logger.info("解析微信支付返回结果：{}".format(result))
-        # [FIXME]
-        # 校验支付信息
-        # transaction = self.env["payment.transaction"].sudo().search(
-        #     [('reference', '=', data["out_trade_no"])], limit=1)
-        # 将支付结果设置完成
-        # transaction._set_transaction_done()
-        return False
+        try:
+            wechatpay = self._get_wechatpay()
+            result = wechatpay.parse_payment_result(data)
+            _logger.info("解析微信支付返回结果：{}".format(result))
+            if result['result_code'] == 'SUCCESS' and result['return_code']=='SUCCESS':
+                # 支付校验成功
+                transaction = self.env["payment.transaction"].sudo().search(
+                    [('reference', '=', data["out_trade_no"])], limit=1)
+                # 将支付结果设置完成
+                transaction._set_transaction_done()
+                return True
+            return False
+        except Exception as err:
+            _logger.error("解析微信支付推送消息失败:{}".format(err))
+            return False
 
 
 class TxWeChatpay(models.Model):

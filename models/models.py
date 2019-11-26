@@ -154,15 +154,9 @@ class TxWeChatpay(models.Model):
         _logger.info('----验证微信支付---')
         _logger.info(data)
         if self.state == 'done':
-            _logger.info(f"支付已经验证：{data['out_trade_no']}")
+            _logger.info(f"支付已经验证：{data['order']}")
             return True
-        result = {
-            "acquirer_reference": data["trade_no"]
-        }
         # 根据微信支付服务器返回的信息，去微信支付服务器查询
         payment = self.env["payment.acquirer"].sudo().search(
             [('provider', '=', 'wechatpay')], limit=1)
-        wechatpay = payment._get_wechatpay()
-        # [FIXME] 去微信服务器验证支付结果
-        self._set_transaction_done()
-        return self.write(result)
+        return payment.wechatpy_query_pay(data['order'])

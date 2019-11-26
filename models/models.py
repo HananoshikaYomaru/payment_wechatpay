@@ -84,7 +84,7 @@ class AcquirerWeChatPay(models.Model):
                     [('reference', '=', order.name)], limit=1)
                 # 将支付结果设置完成
                 result = {
-                    "acquirer_reference": result['transaction_id']
+                    "acquirer_reference": res['transaction_id']
                 }
                 transaction.write(result)
                 transaction._set_transaction_done()

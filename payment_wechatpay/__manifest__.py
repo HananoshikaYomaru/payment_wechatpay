@@ -31,6 +31,7 @@
     'demo': [
         'demo/demo.xml',
     ],
+    'images':['images/wechat.png'],
     "application": True
 
 }

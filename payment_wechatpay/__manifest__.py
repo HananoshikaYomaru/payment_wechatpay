@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 {
     'name': "微信支付",
 
@@ -31,6 +30,7 @@
     'demo': [
         'demo/demo.xml',
     ],
+    'images':['images/wechat.png'],
     "application": True
 
 }

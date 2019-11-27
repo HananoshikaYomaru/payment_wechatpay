@@ -1,4 +1,4 @@
-![](static/src/image/wechat_pay.png)
+![](payment_wechatpay/static/src/image/wechat_pay.png)
 
 odoo 微信支付模块
 
@@ -26,4 +26,4 @@ git clone https://github.com/block-cat/payment_wechatpay
 
 # Demo
 
-![](static/src/image/demo.gif)
+![](payment_wechatpay/static/src/image/demo.gif)

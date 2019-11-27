@@ -26,4 +26,4 @@ git clone https://github.com/block-cat/payment_wechatpay
 
 # Demo
 
-![](payment_wechatpay/static/src/image/demo.gif)
+![](payment_wechatpay/static/description/demo.gif)

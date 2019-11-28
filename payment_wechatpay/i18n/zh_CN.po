@@ -4,10 +4,10 @@
 #
 msgid ""
 msgstr ""
-"Project-Id-Version: Odoo Server 12.0+e\n"
+"Project-Id-Version: Odoo Server 11.0\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2019-11-26 07:44+0000\n"
-"PO-Revision-Date: 2019-11-26 15:47+0800\n"
+"POT-Creation-Date: 2019-11-28 03:22+0000\n"
+"PO-Revision-Date: 2019-11-28 11:22+0800\n"
 "Last-Translator: <>\n"
 "Language-Team: \n"
 "MIME-Version: 1.0\n"
@@ -18,79 +18,69 @@ msgstr ""
 "X-Generator: Poedit 2.2.4\n"
 
 #. module: payment_wechatpay
-#: model_terms:payment.acquirer,cancel_msg:payment_wechatpay.payment_acquirer_wechatpay
+#: model:payment.acquirer,cancel_msg:payment_wechatpay.payment_acquirer_wechatpay
 msgid "<span><i>Cancel,</i> Your payment has been cancelled.</span>"
-msgstr "<span><i>取消,</i> 您的付款已取消.</span>"
+msgstr "<span><i>取消,</i> 你的付款已被取消。</span>"
 
 #. module: payment_wechatpay
-#: model_terms:payment.acquirer,done_msg:payment_wechatpay.payment_acquirer_wechatpay
+#: model:payment.acquirer,done_msg:payment_wechatpay.payment_acquirer_wechatpay
 msgid "<span><i>Done,</i> Your online payment has been successfully processed. Thank you for your order.</span>"
-msgstr "<span><i>完成,</i> 您的在线支付已成功完成. 谢谢.</span>"
+msgstr "<span><i>完成，</i> 你的在线付款已成功完成。感谢你的订单。</span>"
 
 #. module: payment_wechatpay
-#: model_terms:payment.acquirer,error_msg:payment_wechatpay.payment_acquirer_wechatpay
+#: model:payment.acquirer,error_msg:payment_wechatpay.payment_acquirer_wechatpay
 msgid "<span><i>Error,</i> Please be aware that an error occurred during the transaction. The order has been confirmed but will not be paid. Do not hesitate to contact us if you have any questions on the status of your order.</span>"
-msgstr "<span><i>错误，</i>请注意，发生错误。订单已经确认，但不会支付。如果您对订单状态有任何疑问，请随时与我们联系.</span>"
+msgstr "<span><i>出错了。</i>请注意，在交易过程中出现错误。订单已确认，但未支付。如果您对订单状态有任何疑问，请随时联系我们。</span>"
 
 #. module: payment_wechatpay
-#: model_terms:payment.acquirer,pending_msg:payment_wechatpay.payment_acquirer_wechatpay
+#: model:payment.acquirer,pending_msg:payment_wechatpay.payment_acquirer_wechatpay
 msgid "<span><i>Pending,</i> Your online payment has been successfully processed. But your order is not validated yet.</span>"
-msgstr "<span><i>待定,</i> 在线支付已完成. 订单未确认.</span>"
+msgstr "<span><i>待定,</i> 你的在线付款已完成。但是你的订单尚未被验证。</span>"
 
 #. module: payment_wechatpay
-#: selection:payment.acquirer,provider:0
-msgid "AliPay"
-msgstr "支付宝"
-
-#. module: payment_wechatpay
-#: model_terms:ir.ui.view,arch_db:payment_wechatpay.wechatpay_pay
+#: model:ir.ui.view,arch_db:payment_wechatpay.wechatpay_pay
 msgid "Amount:"
 msgstr "金额："
 
 #. module: payment_wechatpay
-#: model:ir.model.fields,field_description:payment_wechatpay.field_payment_acquirer__wechatpay_app_key
+#: model:ir.model.fields,field_description:payment_wechatpay.field_payment_acquirer_wechatpay_app_key
 msgid "Api Key"
 msgstr "API密钥"
 
 #. module: payment_wechatpay
-#: selection:payment.acquirer,provider:0
-msgid "Manual Configuration"
-msgstr "手工配置"
-
-#. module: payment_wechatpay
-#: model:ir.model.fields,field_description:payment_wechatpay.field_payment_acquirer__wechatpay_mch_cert
+#: model:ir.model.fields,field_description:payment_wechatpay.field_payment_acquirer_wechatpay_mch_cert
 msgid "Merchant Cert File Path"
 msgstr "商户证书文件路径"
 
 #. module: payment_wechatpay
-#: model:ir.model.fields,field_description:payment_wechatpay.field_payment_acquirer__wechatpay_mch_id
+#: model:ir.model.fields,field_description:payment_wechatpay.field_payment_acquirer_wechatpay_mch_id
 msgid "Merchant Id"
 msgstr "商户ID"
 
 #. module: payment_wechatpay
-#: model:ir.model.fields,field_description:payment_wechatpay.field_payment_acquirer__wechatpay_mch_key
+#: model:ir.model.fields,field_description:payment_wechatpay.field_payment_acquirer_wechatpay_mch_key
 msgid "Merchat Key File Path"
 msgstr "商户密钥文件路径"
 
 #. module: payment_wechatpay
-#: model_terms:ir.ui.view,arch_db:payment_wechatpay.wechatpay_pay
+#: model:ir.ui.view,arch_db:payment_wechatpay.wechatpay_pay
 msgid "Order:"
 msgstr "订单："
 
 #. module: payment_wechatpay
-#: model_terms:ir.ui.view,arch_db:payment_wechatpay.wechatpay_pay
+#: model:ir.ui.view,arch_db:payment_wechatpay.wechatpay_pay
 msgid "Pay - Pay with WeChatPay"
 msgstr "支付 - 使用微信支付"
 
 #. module: payment_wechatpay
-#: model_terms:ir.ui.view,arch_db:payment_wechatpay.wechatpay_pay
+#: model:ir.ui.view,arch_db:payment_wechatpay.wechatpay_pay
 msgid "Pay with WeChatPay"
 msgstr "使用微信支付"
 
 #. module: payment_wechatpay
 #: model:ir.model,name:payment_wechatpay.model_payment_acquirer
 msgid "Payment Acquirer"
-msgstr "付款收单方"
+msgstr "收单"
 
 #. module: payment_wechatpay
 #: model:ir.model,name:payment_wechatpay.model_payment_transaction
@@ -98,27 +88,16 @@ msgid "Payment Transaction"
 msgstr "付款交易"
 
 #. module: payment_wechatpay
-#: model:ir.model.fields,field_description:payment_wechatpay.field_payment_acquirer__provider
-msgid "Provider"
-msgstr "提供商"
-
-#. module: payment_wechatpay
-#: model:ir.model.fields,field_description:payment_wechatpay.field_payment_transaction__wechatpay_txn_type
+#: model:ir.model.fields,field_description:payment_wechatpay.field_payment_transaction_wechatpay_txn_type
 msgid "Transaction type"
 msgstr "交易类型"
 
 #. module: payment_wechatpay
 #: model:payment.acquirer,name:payment_wechatpay.payment_acquirer_wechatpay
-#: selection:payment.acquirer,provider:0
 msgid "WeChatPay"
 msgstr "微信支付"
 
 #. module: payment_wechatpay
-#: model:ir.model.fields,field_description:payment_wechatpay.field_payment_acquirer__wechatpay_appid
+#: model:ir.model.fields,field_description:payment_wechatpay.field_payment_acquirer_wechatpay_appid
 msgid "WeChatPay AppId"
 msgstr "微信支付绑定的公众号APPID"
-
-#. module: payment_wechatpay
-#: selection:payment.acquirer,provider:0
-msgid "Wire Transfer"
-msgstr "电汇"

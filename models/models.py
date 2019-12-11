@@ -89,6 +89,17 @@ class AcquirerWeChatPay(models.Model):
                     }
                     transaction.write(result)
                     transaction._set_transaction_done()
+                    # 完成付款单
+                    sale_order = self.env['sale.order'].search(
+                        [('name', '=', order)], limit=1)
+                    _logger.info("处理{}的付款单...".format(order))
+                    if sale_order:
+                        elect = self.env.ref(
+                            'payment.account_payment_method_electronic_in').id
+                        sale_order.custom_payment_id.payment_method_id = elect
+                        sale_order.custom_payment_id.payment_transaction_id = transaction.id
+                        sale_order.custom_payment_id.post()
+
                     return True
                 elif transaction.state == 'done':
                     return True
@@ -113,11 +124,22 @@ class AcquirerWeChatPay(models.Model):
                     [('reference', '=', result["out_trade_no"])], limit=1)
                 if transaction.state in ('draft', 'pending', 'authorized'):
                     # 将支付结果设置完成
-                    result = {
+                    res = {
                         "acquirer_reference": result['transaction_id']
                     }
-                    transaction.write(result)
+                    transaction.write(res)
                     transaction._set_transaction_done()
+                    # 完成付款单
+                    sale_order = self.env['sale.order'].search(
+                        [('name', '=', result["out_trade_no"])], limit=1)
+                    _logger.info("处理{}的付款单...".format(result["out_trade_no"]))
+                    if sale_order:
+                        elect = self.env.ref(
+                            'payment.account_payment_method_electronic_in').id
+                        sale_order.custom_payment_id.payment_method_id = elect
+                        sale_order.custom_payment_id.payment_transaction_id = transaction.id
+                        sale_order.custom_payment_id.post()
+
                     return True
                 elif transaction.state == 'done':
                     return True

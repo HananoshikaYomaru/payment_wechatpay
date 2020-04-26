@@ -10,7 +10,7 @@ odoo 微信支付模块
 
 python >= 3.6
 
-odoo == 12.0
+odoo == 13.0
 
 ## Main functionalities
 
@@ -27,3 +27,7 @@ git clone https://github.com/block-cat/payment_wechatpay
 # Demo
 
 ![](static/src/image/demo.gif)
+
+# 技术支持
+
+kfx2007@163.com 仅限付费用户。

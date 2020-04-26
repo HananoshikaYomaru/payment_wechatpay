@@ -63,7 +63,6 @@ class AcquirerWeChatPay(models.Model):
         except Exception as err:
             return False, err
 
-    @api.multi
     def wechatpay_get_form_action_url(self):
         """统一下单"""
         return "/shop/wechatpay"
@@ -107,7 +106,6 @@ class AcquirerWeChatPay(models.Model):
                     return False
         return False
 
-    @api.multi
     def wechatpay_from_generate_values(self, values):
         wechatpay_tx_values = dict(values)
         return wechatpay_tx_values
@@ -175,7 +173,6 @@ class TxWeChatpay(models.Model):
             raise ValidationError(error_msg)
         return txs[0]
 
-    @api.multi
     def _wechatpay_form_validate(self, data):
         """验证微信支付"""
         if self.state == 'done':

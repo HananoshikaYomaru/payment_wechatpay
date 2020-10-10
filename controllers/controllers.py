@@ -14,7 +14,7 @@ _logger = logging.getLogger(__name__)
 class WeChatPay(http.Controller):
 
     def make_qrcode(self, qrurl):
-        """根据URL生成二维码字符"""
+        """generate qrcode from url"""
         img = qrcode.make(qrurl)
         buffer = BytesIO()
         img.save(buffer, format='PNG')
@@ -38,7 +38,7 @@ class WeChatPay(http.Controller):
 
     @http.route('/shop/wechatpay/result', type='http', auth="public", website=True)
     def wechatpay_query(self, order):
-        """轮询支付结果"""
+        """query payment result from page"""
         # order = request.website.sale_get_order()
         # 获取微信支付
         acquirer = request.env['payment.acquirer'].sudo().search(
@@ -55,21 +55,21 @@ class WeChatPay(http.Controller):
 
     @http.route('/payment/wechatpay/validate', type="http", auth="none", methods=['POST', 'GET'], csrf=False)
     def wechatpay_validate(self, **kwargs):
-        """页面跳转后验证支付结果"""
-        _logger.info("开始验证微信支付结果...")
+        """validate payment result"""
+        _logger.info(_("validating payment result..."))
         try:
             res = self.validate_pay_data(**kwargs)
         except ValidationError:
-            _logger.exception("支付验证失败")
+            _logger.exception(_("payment validate failed"))
         return redirect_with_hash("/payment/process")
 
     @http.route('/payment/wechatpay/notify', csrf=False, type="http", auth='none', method=["POST"])
     def wechatpay_notify(self, **kwargs):
-        """接收微信支付异步通知"""
-        _logger.debug("接收微信支付异步通知...收到的数据:{}".format(request.httprequest.data))
+        """receive message from wechatpay server"""
+        _logger.debug("Receive data from wechatpay server:{}".format(request.httprequest.data))
         payment = request.env["payment.acquirer"].sudo().search(
             [('provider', '=', 'wechatpay')], limit=1)
 
         if payment._verify_wechatpay(request.httprequest.data):
-            _logger.debug("回复微信")
+            _logger.debug("reply wechatpay server")
             return b"""<xml><return_code><![CDATA[SUCCESS]]></return_code><return_msg><![CDATA[OK]]></return_msg></xml>"""
